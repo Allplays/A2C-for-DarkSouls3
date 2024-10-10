@@ -207,9 +207,13 @@ if __name__ == "__main__":
             optimizer.param_groups[0]["lr"] = lrnow
 
         for step in range(0, args.num_steps):
+            in_control = True
+            reward_during_uncontrol = 0
             global_step += 1 * args.num_envs
-            obs[step] = next_obs
-            dones[step] = next_done
+            if not(next_obs == False and in_control == False):
+                obs[step] = next_obs
+                dones[step] = next_done
+            in_control = obs[2]
 
             # ALGO LOGIC: action logic
             with torch.no_grad():
@@ -221,15 +225,15 @@ if __name__ == "__main__":
             # TRY NOT TO MODIFY: execute the game and log data.
             next_obs, reward, terminated, truncated, infos = envs.step(action.cpu().numpy())
             done = np.logical_or(terminated, truncated)
-            rewards[step] = torch.tensor(reward).to(device).view(-1)
+            if not(next_obs == False and in_control == False) or done:
+                obs[step] = next_obs
+                rewards[step] = torch.tensor(reward).to(device).view(-1)
+                accum_rewards += np.array(reward)
+                for i, d in enumerate(done):
+                    if d:
+                        episode_returns.append(accum_rewards[i])
+                        accum_rewards[i] = 0
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
-
-            accum_rewards += np.array(reward)
-
-            for i, d in enumerate(done):
-                if d:
-                    episode_returns.append(accum_rewards[i])
-                    accum_rewards[i] = 0
 
         # bootstrap value if not done
         with torch.no_grad():
