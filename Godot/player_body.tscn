@@ -1,0 +1,75 @@
+[gd_scene load_steps=6 format=3 uid="uid://d8hynk86f43h"]
+
+[ext_resource type="Script" path="res://player_body.gd" id="1_w4upy"]
+[ext_resource type="Texture2D" uid="uid://dk3xmppskpl8l" path="res://icon.svg" id="2_usfd8"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xej7m"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_usfd8")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_40qu6"]
+radius = 66.0
+height = 132.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5yp0k"]
+radius = 122.0
+height = 258.0
+
+[node name="player_body" type="CharacterBody2D"]
+collision_mask = 192
+script = ExtResource("1_w4upy")
+
+[node name="player_sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_xej7m")
+
+[node name="player_collision" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_40qu6")
+
+[node name="light_attack_area" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="light_attack_collision" type="CollisionShape2D" parent="light_attack_area"]
+light_mask = 8
+visibility_layer = 2
+position = Vector2(125, -3)
+shape = SubResource("CapsuleShape2D_5yp0k")
+
+[node name="light_attack_sprite" type="Sprite2D" parent="light_attack_area"]
+position = Vector2(135, 1)
+scale = Vector2(1.4375, 1.375)
+texture = ExtResource("2_usfd8")
+
+[node name="light_attack_startup" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="light_attack_active" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="light_attack_recovery" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="roll_timer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="roll_timer_CD" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[connection signal="body_entered" from="light_attack_area" to="." method="_on_light_attack_area_body_entered"]
+[connection signal="timeout" from="light_attack_startup" to="." method="_on_light_attack_startup_timeout"]
+[connection signal="timeout" from="light_attack_active" to="." method="_on_light_attack_active_timeout"]
+[connection signal="timeout" from="light_attack_recovery" to="." method="_on_light_attack_recovery_timeout"]
+[connection signal="timeout" from="roll_timer" to="." method="_on_roll_timer_timeout"]
+[connection signal="timeout" from="roll_timer_CD" to="." method="_on_roll_timer_cd_timeout"]

@@ -1,0 +1,202 @@
+[gd_scene load_steps=11 format=3 uid="uid://c8eqg04bfwjd3"]
+
+[ext_resource type="Script" path="res://iudex_gundyr.gd" id="1_w1n5h"]
+[ext_resource type="Texture2D" uid="uid://dk3xmppskpl8l" path="res://icon.svg" id="2_ebkuv"]
+[ext_resource type="Script" path="res://StateMachine.gd" id="3_cxue7"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_44fr7"]
+radius = 70.0
+height = 148.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g0cjk"]
+size = Vector2(204, 270)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vvh7a"]
+radius = 106.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_afvce"]
+radius = 131.244
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_d5csp"]
+radius = 54.037
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kniq1"]
+size = Vector2(405, 95)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v5c0u"]
+size = Vector2(329, 48)
+
+[node name="iudex_gundyr" type="CharacterBody2D"]
+script = ExtResource("1_w1n5h")
+
+[node name="iudex_gundyr_collision" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_44fr7")
+
+[node name="iudex_gundyr_sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_ebkuv")
+
+[node name="decision_timer" type="Timer" parent="."]
+one_shot = true
+
+[node name="slash_area" type="Area2D" parent="."]
+
+[node name="slash_collision" type="CollisionShape2D" parent="slash_area"]
+position = Vector2(92, 6)
+shape = SubResource("RectangleShape2D_g0cjk")
+
+[node name="slam_area" type="Area2D" parent="."]
+
+[node name="slam_colision" type="CollisionShape2D" parent="slam_area"]
+position = Vector2(87, -1)
+shape = SubResource("CircleShape2D_vvh7a")
+
+[node name="large_slam_area" type="Area2D" parent="."]
+
+[node name="large_slam_collision" type="CollisionShape2D" parent="large_slam_area"]
+position = Vector2(123, 0)
+shape = SubResource("CircleShape2D_afvce")
+
+[node name="gundyr_grab_area" type="Area2D" parent="."]
+
+[node name="gundyr_grab_collision" type="CollisionShape2D" parent="gundyr_grab_area"]
+position = Vector2(86, -1)
+shape = SubResource("CircleShape2D_d5csp")
+
+[node name="jumping_slash_area" type="Area2D" parent="."]
+
+[node name="jumping_slash_collision" type="CollisionShape2D" parent="jumping_slash_area"]
+position = Vector2(-3, 3)
+shape = SubResource("RectangleShape2D_kniq1")
+
+[node name="stab_area" type="Area2D" parent="."]
+
+[node name="stab_colision" type="CollisionShape2D" parent="stab_area"]
+position = Vector2(154.5, -1)
+shape = SubResource("RectangleShape2D_v5c0u")
+
+[node name="recovery_timer" type="Timer" parent="."]
+one_shot = true
+
+[node name="slash_into_large_slam" type="Node" parent="."]
+
+[node name="slash_into_large_slam_startup" type="Timer" parent="slash_into_large_slam"]
+wait_time = 0.5
+one_shot = true
+
+[node name="slash_into_large_slam_first_active" type="Timer" parent="slash_into_large_slam"]
+wait_time = 0.1
+one_shot = true
+
+[node name="slash_into_large_slam_mid" type="Timer" parent="slash_into_large_slam"]
+wait_time = 1.5
+one_shot = true
+
+[node name="slash_into_large_slam_second_active" type="Timer" parent="slash_into_large_slam"]
+wait_time = 0.1
+one_shot = true
+
+[node name="stab_into_smash" type="Node" parent="."]
+
+[node name="startup" type="Timer" parent="stab_into_smash"]
+wait_time = 0.35
+one_shot = true
+
+[node name="first_active" type="Timer" parent="stab_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="mid" type="Timer" parent="stab_into_smash"]
+one_shot = true
+
+[node name="second_active" type="Timer" parent="stab_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="smash_into_smash" type="Node" parent="."]
+
+[node name="startup2" type="Timer" parent="smash_into_smash"]
+one_shot = true
+
+[node name="first_active2" type="Timer" parent="smash_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="mid2" type="Timer" parent="smash_into_smash"]
+one_shot = true
+
+[node name="second_active2" type="Timer" parent="smash_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="double_slash" type="Node" parent="."]
+
+[node name="startup3" type="Timer" parent="double_slash"]
+wait_time = 0.5
+one_shot = true
+
+[node name="first_active3" type="Timer" parent="double_slash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="mid3" type="Timer" parent="double_slash"]
+wait_time = 0.5
+one_shot = true
+
+[node name="second_active3" type="Timer" parent="double_slash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="double_slash_into_smash" type="Node" parent="."]
+
+[node name="startup4" type="Timer" parent="double_slash_into_smash"]
+wait_time = 0.5
+one_shot = true
+
+[node name="first_active4" type="Timer" parent="double_slash_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="mid4" type="Timer" parent="double_slash_into_smash"]
+wait_time = 0.5
+one_shot = true
+
+[node name="second_active4" type="Timer" parent="double_slash_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="second_mid" type="Timer" parent="double_slash_into_smash"]
+one_shot = true
+
+[node name="last_active" type="Timer" parent="double_slash_into_smash"]
+wait_time = 0.1
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_cxue7")
+
+[connection signal="timeout" from="decision_timer" to="." method="_on_decision_timer_timeout"]
+[connection signal="timeout" from="recovery_timer" to="." method="_on_recovery_timer_timeout"]
+[connection signal="timeout" from="slash_into_large_slam/slash_into_large_slam_startup" to="." method="_on_slash_into_large_slam_startup_timeout"]
+[connection signal="timeout" from="slash_into_large_slam/slash_into_large_slam_first_active" to="." method="_on_slash_into_large_slam_first_active_2_timeout"]
+[connection signal="timeout" from="slash_into_large_slam/slash_into_large_slam_mid" to="." method="_on_slash_into_large_slam_mid_timeout"]
+[connection signal="timeout" from="slash_into_large_slam/slash_into_large_slam_second_active" to="." method="_on_slash_into_large_slam_second_active_timeout"]
+[connection signal="timeout" from="stab_into_smash/startup" to="." method="_on_startup_timeout"]
+[connection signal="timeout" from="stab_into_smash/first_active" to="." method="_on_first_active_timeout"]
+[connection signal="timeout" from="stab_into_smash/mid" to="." method="_on_mid_timeout"]
+[connection signal="timeout" from="stab_into_smash/second_active" to="." method="_on_second_active_timeout"]
+[connection signal="timeout" from="smash_into_smash/startup2" to="." method="_on_startup_timeout"]
+[connection signal="timeout" from="smash_into_smash/first_active2" to="." method="_on_first_active_timeout"]
+[connection signal="timeout" from="smash_into_smash/mid2" to="." method="_on_mid_2_timeout"]
+[connection signal="timeout" from="smash_into_smash/second_active2" to="." method="_on_second_active_2_timeout"]
+[connection signal="timeout" from="double_slash/startup3" to="." method="_on_startup_3_timeout"]
+[connection signal="timeout" from="double_slash/first_active3" to="." method="_on_first_active_3_timeout"]
+[connection signal="timeout" from="double_slash/mid3" to="." method="_on_mid_3_timeout"]
+[connection signal="timeout" from="double_slash/second_active3" to="." method="_on_second_active_3_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/startup4" to="." method="_on_startup_4_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/first_active4" to="." method="_on_first_active_4_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/mid4" to="." method="_on_mid_4_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/second_active4" to="." method="_on_second_active_4_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/second_mid" to="." method="_on_second_mid_timeout"]
+[connection signal="timeout" from="double_slash_into_smash/last_active" to="." method="_on_last_active_timeout"]
