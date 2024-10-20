@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://b52y3xho315sn"]
+[gd_scene load_steps=6 format=3 uid="uid://b52y3xho315sn"]
 
 [ext_resource type="PackedScene" uid="uid://d8hynk86f43h" path="res://player_body.tscn" id="1_4um3e"]
 [ext_resource type="Texture2D" uid="uid://c3ds1jjbxfse4" path="res://sprites/qvb7je6xyz291.webp" id="1_56ikv"]
 [ext_resource type="Script" path="res://nivel.gd" id="1_pjlc5"]
 [ext_resource type="PackedScene" uid="uid://c6tqhccagboxr" path="res://boss_body.tscn" id="3_124pl"]
+[ext_resource type="Script" path="res://addons/godot_rl_agents/sync.gd" id="5_xf82i"]
 
 [node name="nivel" type="Node2D"]
 script = ExtResource("1_pjlc5")
@@ -39,5 +40,9 @@ collision_mask = 3
 [node name="walls_collision" type="CollisionPolygon2D" parent="StaticBody2D"]
 position = Vector2(-9, -7)
 polygon = PackedVector2Array(485, 121, 414, 123, 241, 163, 176, 290, 174, 433, 260, 522, 386, 574, 427.787, 573.057, 519, 571, 613, 525, 641, 597, 590, 754, -89, 743, -86, -105, 724, -89, 680, 7, 695, 75, 620, 164, 531, 126)
+
+[node name="Sync" type="Node" parent="."]
+script = ExtResource("5_xf82i")
+speed_up = 10.0
 
 [connection signal="body_entered" from="fall" to="." method="_on_fall_body_entered"]

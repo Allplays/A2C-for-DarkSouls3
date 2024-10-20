@@ -110,14 +110,14 @@ class Agent(nn.Module):
     def __init__(self, envs):
         super().__init__()
         self.critic = nn.Sequential(
-            layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
+            layer_init(nn.Linear(np.array(12,).prod(), 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 32)),
             nn.Tanh(),
             layer_init(nn.Linear(32, 1), std=1.0),
         )
         self.actor_mean = nn.Sequential(
-            layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
+            layer_init(nn.Linear(np.array(12,).prod(), 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 32)),
             nn.Tanh(),
@@ -129,13 +129,13 @@ class Agent(nn.Module):
         return self.critic(x)
 
     def get_action_and_value(self, x, action=None):
-        action_mean = self.actor_mean(x)
-        action_logstd = self.actor_logstd.expand_as(action_mean)
+        action_mean = self.actor_mean(x).tolist()
+        action_logstd = self.actor_logstd.expand_as(torch.tensor([action_mean]))
         action_std = torch.exp(action_logstd)
-        probs = Normal(action_mean, action_std)
+        probs = Normal(torch.tensor(action_mean), action_std)
         if action is None:
             action = probs.sample()
-        return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
+        return action, probs.log_prob(action).sum(-1), probs.entropy().sum(1), self.critic(x)
 
 
 if __name__ == "__main__":
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
 
     # ALGO Logic: Storage setup
-    obs = torch.zeros((args.num_steps, args.num_envs) + envs.single_observation_space.shape).to(device)
+    obs = torch.zeros((args.num_steps, args.num_envs) + (12,)).to(device)
     actions = torch.zeros((args.num_steps, args.num_envs) + envs.single_action_space.shape).to(device)
     logprobs = torch.zeros((args.num_steps, args.num_envs)).to(device)
     rewards = torch.zeros((args.num_steps, args.num_envs)).to(device)
@@ -195,6 +195,12 @@ if __name__ == "__main__":
     num_updates = args.total_timesteps // args.batch_size
     video_filenames = set()
 
+    actual_in_control = True
+    previous_in_control = True
+    aux = next_obs.numpy()
+    aux = np.delete(aux, 5)
+    next_obs = torch.from_numpy(aux)
+
     # episode reward stats, modified as Godot RL does not return this information in info (yet)
     episode_returns = deque(maxlen=20)
     accum_rewards = np.zeros(args.num_envs)
@@ -207,27 +213,42 @@ if __name__ == "__main__":
             optimizer.param_groups[0]["lr"] = lrnow
 
         for step in range(0, args.num_steps):
-            in_control = True
+            print(f"step: {step}")
+            """if step == 0:
+                previous_in_control = True
+                print(f"En el paso 0, la observacione es: {obs}")
+                actual_in_control = next_obs[0][5]
+                aux = next_obs.numpy()
+                aux = np.delete(aux, 5)
+                next_obs = torch.from_numpy(aux)"""
             reward_during_uncontrol = 0
+            uncontrolled_steps = 0
             global_step += 1 * args.num_envs
-            if not(next_obs == False and in_control == False):
-                obs[step] = next_obs
-                dones[step] = next_done
-            in_control = obs[2]
+            if not(actual_in_control == 1 and previous_in_control == 0):
+                obs[step - uncontrolled_steps] = next_obs
+                dones[step - uncontrolled_steps] = next_done
+            else:
+                uncontrolled_steps += 1
+            
 
             # ALGO LOGIC: action logic
             with torch.no_grad():
                 action, logprob, _, value = agent.get_action_and_value(next_obs)
-                values[step] = value.flatten()
-            actions[step] = action
-            logprobs[step] = logprob
+            if not(actual_in_control == 0 and previous_in_control == 0):
+                values[step - uncontrolled_steps] = value.flatten()
+                actions[step - uncontrolled_steps] = action
+                logprobs[step - uncontrolled_steps] = logprob
 
             # TRY NOT TO MODIFY: execute the game and log data.
             next_obs, reward, terminated, truncated, infos = envs.step(action.cpu().numpy())
+            actual_in_control = next_obs[0][5]
+            next_obs = np.delete(next_obs, 5)
             done = np.logical_or(terminated, truncated)
-            if not(next_obs == False and in_control == False) or done:
-                obs[step] = next_obs
-                rewards[step] = torch.tensor(reward).to(device).view(-1)
+            previous_in_control = actual_in_control
+            if not(actual_in_control == 1 and previous_in_control == 0) or done:
+                obs[step - uncontrolled_steps] = torch.from_numpy(next_obs)
+                
+                rewards[step - uncontrolled_steps] = torch.tensor(reward).to(device).view(-1)
                 accum_rewards += np.array(reward)
                 for i, d in enumerate(done):
                     if d:
@@ -252,7 +273,7 @@ if __name__ == "__main__":
             returns = advantages + values
 
         # flatten the batch
-        b_obs = obs.reshape((-1,) + envs.single_observation_space.shape)
+        b_obs = obs.reshape((-1,) + (12,))
         b_logprobs = logprobs.reshape(-1)
         b_actions = actions.reshape((-1,) + envs.single_action_space.shape)
         b_advantages = advantages.reshape(-1)
@@ -335,35 +356,35 @@ if __name__ == "__main__":
     envs.close()
     writer.close()
 
-    if args.onnx_export_path is not None:
-        path_onnx = pathlib.Path(args.onnx_export_path).with_suffix(".onnx")
-        print("Exporting onnx to: " + os.path.abspath(path_onnx))
 
-        agent.eval().to("cpu")
+    path_onnx = pathlib.Path(r"C:\Users\inhal\Documents\GitHub\A2C-for-DarkSouls3\Godot\models\PPO").with_suffix(".onnx")
+    print("Exporting onnx to: " + os.path.abspath(path_onnx))
 
-        class OnnxPolicy(torch.nn.Module):
-            def __init__(self, actor_mean):
-                super().__init__()
-                self.actor_mean = actor_mean
+    agent.eval().to("cpu")
 
-            def forward(self, obs, state_ins):
-                action_mean = self.actor_mean(obs)
-                return action_mean, state_ins
+    class OnnxPolicy(torch.nn.Module):
+        def __init__(self, actor_mean):
+            super().__init__()
+            self.actor_mean = actor_mean
 
-        onnx_policy = OnnxPolicy(agent.actor_mean)
-        dummy_input = torch.unsqueeze(torch.tensor(envs.single_observation_space.sample()), 0)
+        def forward(self, obs, state_ins):
+            action_mean = self.actor_mean(obs)
+            return action_mean, state_ins
 
-        torch.onnx.export(
-            onnx_policy,
-            args=(dummy_input, torch.zeros(1).float()),
-            f=str(path_onnx),
-            opset_version=15,
-            input_names=["obs", "state_ins"],
-            output_names=["output", "state_outs"],
-            dynamic_axes={
-                "obs": {0: "batch_size"},
-                "state_ins": {0: "batch_size"},  # variable length axes
-                "output": {0: "batch_size"},
-                "state_outs": {0: "batch_size"},
-            },
-        )
+    onnx_policy = OnnxPolicy(agent.actor_mean)
+    dummy_input = torch.unsqueeze(torch.tensor(envs.single_observation_space.sample()), 0)
+
+    torch.onnx.export(
+           onnx_policy,
+        args=(dummy_input, torch.zeros(1).float()),
+        f=str(path_onnx),
+        opset_version=15,
+        input_names=["obs", "state_ins"],
+        output_names=["output", "state_outs"],
+        dynamic_axes={
+            "obs": {0: "batch_size"},
+            "state_ins": {0: "batch_size"},  # variable length axes
+            "output": {0: "batch_size"},
+            "state_outs": {0: "batch_size"},
+        },
+     )

@@ -13,7 +13,7 @@ const attacks = {"slash_into_large_slam": ["slash", "slam"],
 const decisions = ["walk",
 				"attack"]
 				
-var hp = 10
+var hp = 20
 
 func _ready() -> void:
 	$attacks/jump_area/jump_collision.disabled = true
@@ -41,8 +41,7 @@ func _on_boss_animation_player_animation_changed(old_name: StringName, new_name:
 func take_damage():
 	hp -= 1
 	if hp < 1:
-		get_tree().reload_current_scene()
-	print("boss hp = " + str(hp))
+		get_parent().reset()
 
 func _on_jump_area_body_entered(body: Node2D) -> void:
 	body.take_damage()

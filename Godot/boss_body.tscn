@@ -558,20 +558,20 @@ _data = {
 }
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_meevn"]
-size = Vector2(150.5, 78.5)
+size = Vector2(222.25, 78.25)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_todxy"]
-radius = 65.0692
+radius = 104.043
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vwscm"]
-size = Vector2(137.5, 26)
+size = Vector2(212.75, 26)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_7fmip"]
-radius = 37.054
+radius = 68.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fns28"]
-radius = 39.0
-height = 144.0
+radius = 97.0
+height = 242.0
 
 [node name="boss_body" type="CharacterBody2D"]
 collision_layer = 2
@@ -592,8 +592,9 @@ libraries = {
 collision_layer = 8
 
 [node name="jump_collision" type="CollisionShape2D" parent="attacks/jump_area"]
-position = Vector2(50, 2)
-scale = Vector2(-1, 1)
+position = Vector2(85.875, 2.125)
+rotation = 3.14159
+scale = Vector2(1, -1)
 shape = SubResource("RectangleShape2D_meevn")
 
 [node name="slash_area" type="Area2D" parent="attacks"]
@@ -608,7 +609,7 @@ disabled = true
 collision_layer = 8
 
 [node name="stab_collision" type="CollisionShape2D" parent="attacks/stab_area"]
-position = Vector2(41, -2)
+position = Vector2(78.625, -2)
 shape = SubResource("RectangleShape2D_vwscm")
 disabled = true
 
