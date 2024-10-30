@@ -1,7 +1,7 @@
 extends Node2D
 
 var current_animation
-const boss_animations = ["grab", "jump", "recovering", "slam", "slash", "stab", "walk"]
+const boss_animations = ["grab", "jump", "recovering", "slam", "slash", "stab", "walk", "RESET"]
 var restart_player_position
 var restart_boss_position
 # Called when the node enters the scene tree for the first time.
